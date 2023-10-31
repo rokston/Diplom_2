@@ -105,7 +105,7 @@ public class LoginUserTest {
 
     @Test
     @DisplayName("Авторизация пользователя с неверным логином и существующим паролем, неуспешная")
-    public void loginUserWrongLoginFail() {
+    public void loginUserWrongEmailFail() {
 
         createUser(newUser);
         Credentials wrongLoginCredentials = new Credentials(newUser.getEmail() + "oops", newUser.getPassword());
