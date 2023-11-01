@@ -135,6 +135,51 @@ public class UserDataChangeTest {
         }
     }
 
+    @Step("Изменение данных пользователя без авторизации")
+    @Test
+    public void changeUserDataTestNoAuth() {
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        UserData userData = new UserData(email + "ch", name + "ch"); //отредактированные данные пользователя
+        int code = response.then().
+                extract().statusCode();
+        if (code == 200) { // логин прошел успешно, можно редактировать данные
+           // String userToken = response //токен для доступа на редактирование
+             //       .then().extract().body().path("accessToken");
+
+            response = given() // устанавливаем новые данные пользователя
+                    .header("Content-type", "application/json")
+                    //.header("Authorization", userToken)
+                    .and()
+                    .body(userData)
+                    .when()
+                    .patch(ApiEndpoint.CHANGE_USER_DATA);
+
+            response.then().log().all() //проверяем, что запрос на редактирование принят успешно
+                    .assertThat()
+                    .statusCode(401);
+//проверяем, что после редактирования данные пользователя изменились
+            //   response.then().assertThat().body("user.email", CoreMatchers.equalTo(userData.getEmail()));
+           // response.then().assertThat().body("user.name", CoreMatchers.equalTo(userData.getName()));
+
+
+
+            response = loginUser(credentials);//удачная попытка залогиниться со старым имейлом
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(200);
+
+          //  credentials.setEmail(chEmail); //в данных пользователя для логина устанавливаем новый имейл
+
+          //  response = loginUser(credentials); //удачная попытка логина с новыми даныыми
+
+          //  response.then().log().all()
+          //          .assertThat()
+          //          .statusCode(200);
+
+        }
+    }
+
 
     @After
     public void cleanUp() { //удаление пользователя
@@ -152,8 +197,25 @@ public class UserDataChangeTest {
                     .statusCode(202);
 
         }
-        else  {
-            System.out.println("Cannot delete not existing user");
+        else {
+            newUser = new User(email, password, name);//удаление пользователя с неотредактированными данными
+            userToken = loginUser(newUser);
+
+            if (userToken != null) {
+                Response response = given()
+                        .header("Content-type", "application/json")
+                        .header("Authorization", userToken)
+                        .when()
+                        .delete(ApiEndpoint.DELETE_USER);
+
+                response.then().log().all()
+                        .assertThat()
+                        .statusCode(202);
+
+            }
+            else  {
+                System.out.println("Cannot delete not existing user");
+            }
         }
     }
 }
