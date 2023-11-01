@@ -3,10 +3,8 @@ import static io.restassured.RestAssured.given;
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.*;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
@@ -18,19 +16,19 @@ import io.qameta.allure.Step; // импорт Step
 
 public class UserDataChangeTest {
 
+    @Before
+    public void setUp() {
+        RestAssured.baseURI = ApiEndpoint.BASE_ADDRESS;
+    }
     Faker faker = new Faker();
     String email = faker.name().username() + "@testdomain.com";
+    String chEmail = email + "ch";
     String password = faker.random().toString();
     String name = faker.name().firstName();
 
     //данные основного пользователя
     User newUser = new User(email, password, name);
     Credentials credentials = new Credentials(newUser.getEmail(), newUser.getPassword()); //логин и пароль основного пользователя
-
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = ApiEndpoint.BASE_ADDRESS;
-    }
 
 
     @Step("Создание пользователя")
@@ -59,8 +57,7 @@ public class UserDataChangeTest {
         return response;
     }
 
-    public String loginUser(User user) { //авторизация пользователя и получение токена и данных пользователя
-
+    public String loginUser(User user) { //авторизация пользователя и получение токена
         Credentials credentials = new Credentials(user.getEmail(), user.getPassword());
         Response response =
                 given()
@@ -94,31 +91,54 @@ public class UserDataChangeTest {
     }
 
     @Step("Изменение данных пользователя")
+    @Test
     public void changeUserDataTest() {
-        createUser(newUser);
-        Response response = loginUser(credentials);
-        String userToken;
-        UserData userData = null;
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        UserData userData = new UserData(email + "ch", name + "ch"); //отредактированные данные пользователя
         int code = response.then().
                 extract().statusCode();
-        if (code == 200) {
-            userToken = response
+        if (code == 200) { // логин прошел успешно, можно редактировать данные
+            String userToken = response //токен для доступа на редактирование
                     .then().extract().body().path("accessToken");
 
-            userData.setEmail(response.then().extract().body().path("user.email"));
-            userData.setName(response.then().extract().body().path("user.name"));
-            System.out.println(userData.getEmail());
-            System.out.println(userData.getName());
+            response = given() // устанавливаем новые данные пользователя
+                    .header("Content-type", "application/json")
+                    .header("Authorization", userToken)
+                    .and()
+                    .body(userData)
+                    .when()
+                    .patch(ApiEndpoint.CHANGE_USER_DATA);
+
+            response.then().log().all() //проверяем, что запрос на редактирование принят успешно
+                    .assertThat()
+                    .statusCode(200);
+//проверяем, что после редактирования данные пользователя изменились
+            response.then().assertThat().body("user.email", CoreMatchers.equalTo(userData.getEmail()));
+            response.then().assertThat().body("user.name", CoreMatchers.equalTo(userData.getName()));
+
+
+
+            response = loginUser(credentials);//неудачная попытка залогиниться со старым имейлом
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(401);
+
+            credentials.setEmail(chEmail); //в данных пользователя для логина устанавливаем новый имейл
+
+            response = loginUser(credentials); //удачная попытка логина с новыми даныыми
+
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(200);
 
         }
-
-
     }
 
 
     @After
     public void cleanUp() { //удаление пользователя
-        User newUser = new User(email, password, name);
+        User newUser = new User(chEmail, password, name);//удаление пользователя с отредактированными данными
         String userToken = loginUser(newUser);
         if (userToken != null)  {
             Response response = given()

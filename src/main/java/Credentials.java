@@ -1,7 +1,7 @@
 public class Credentials { //логин и пароль пользователя
 
-    private final String email;
-    private final String password;
+    private String email;
+    private String password;
 
     public Credentials(String email, String password) {
         this.email = email;
@@ -14,4 +14,10 @@ public class Credentials { //логин и пароль пользователя
     public String getPassword() {
         return password;
     }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+
 }
