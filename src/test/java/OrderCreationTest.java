@@ -2,9 +2,11 @@ import io.restassured.response.Response;
 import static io.restassured.RestAssured.given;
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
+import org.hamcrest.CoreMatchers;
 import org.junit.*;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
 import io.qameta.allure.Step; // импорт Step
@@ -19,6 +21,7 @@ public class OrderCreationTest {
     public void setUp() {
         RestAssured.baseURI = ApiEndpoint.BASE_ADDRESS;
     }
+
     Faker faker = new Faker();
     String email = faker.name().username() + "@testdomain.com";
     String password = faker.random().toString();
@@ -106,27 +109,73 @@ public class OrderCreationTest {
         return ingredients.getData();
     }
 
-@Test
-public void createOrderWithAuthTest(){
-    createUser(newUser); //созадем нового пользователя
-    Response response = loginUser(credentials); //логинимся
-    List<Data> ingrList = getListOfIngredients();
-    int size = ingrList.size(); //индексы массива будут от 0 до size-1
-    System.out.println(size);
-    System.out.println("this is size");
+    @Test
+    public void createOrderWithAuthTest() {
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        List<Data> ingrList = getListOfIngredients();
+        int size = ingrList.size(); //индексы массива будут от 0 до size-1
+        System.out.println(size);
+        System.out.println("this is size");
+        Random rn;
+        List<String> ingredients = new ArrayList<>();
+        int randomNum1, randomNum2, randomNum3;
+        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
 
-    //
-    Random rn = new Random();
-    int randomNum = rn.nextInt(size);
+        rn = new Random();
+        randomNum1 = rn.nextInt(size);
+        ingredients.add(0, "\"" + ingrList.get(randomNum1).get_id()+ "\"");
+        System.out.println(randomNum1);
 
+        rn = new Random();
+        randomNum2 = rn.nextInt(size);
+        ingredients.add(1, "\"" + ingrList.get(randomNum2).get_id()+ "\"");
+        System.out.println(randomNum2);
 
-}
+        rn = new Random();
+        randomNum3 = rn.nextInt(size);
+        ingredients.add(2, "\"" + ingrList.get(randomNum3).get_id()+ "\"");
+        System.out.println(randomNum3);
+
+        System.out.println(ingredients);
+        System.out.println("ingredients!!");
+
+        String json = "{\"ingredients\": [" + "\""
+                + ingrList.get(randomNum1).get_id() + "\"" + ", "
+                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
+                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";
+        System.out.println(json);
+        //создаем заказ
+        String userToken = loginUser(newUser);
+        System.out.println(userToken);
+
+        if (userToken != null) {
+            response = given()
+                    .header("Content-type", "application/json")
+                    .header("Authorization", userToken)
+                    // .body(ingredients)
+                    .body(json)
+                    .when()
+                    .post(ApiEndpoint.CREATE_ORDER);
+
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(200);
+
+            response.then()
+                    .assertThat().body("success", equalTo(true));
+            response.then().assertThat().body("order", notNullValue());
+            response.then().assertThat().body("order.owner", notNullValue());
+            response.then().assertThat().body("order.number", notNullValue());
+
+        }
+    }
 
     @After
     public void cleanUp() { //удаление пользователя
         User newUser = new User(email, password, name);
         String userToken = loginUser(newUser);
-        if (userToken != null)  {
+        if (userToken != null) {
             Response response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
@@ -137,11 +186,12 @@ public void createOrderWithAuthTest(){
                     .assertThat()
                     .statusCode(202);
 
-        }
-        else  {
+        } else {
             System.out.println("Cannot delete not existing user");
         }
     }
 
-
 }
+
+
+
