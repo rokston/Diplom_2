@@ -1,19 +1,17 @@
-
 import io.restassured.response.Response;
 import static io.restassured.RestAssured.given;
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.*;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
-import io.qameta.allure.junit4.DisplayName; // импорт DisplayName
-import io.qameta.allure.Description; // импорт Description
 import io.qameta.allure.Step; // импорт Step
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class OrderCreationTest {
 
@@ -57,6 +55,7 @@ public class OrderCreationTest {
         return response;
     }
 
+    @Step("логин пользователя и получение токена")
     public String loginUser(User user) { //авторизация пользователя и получение токена
         Credentials credentials = new Credentials(user.getEmail(), user.getPassword());
         Response response =
@@ -89,6 +88,39 @@ public class OrderCreationTest {
                 .delete(ApiEndpoint.DELETE_USER);
         return response;
     }
+
+    @Step("получение списка ингредиентов")
+    public List<Data> getListOfIngredients() { //получение списка ингредиентов
+
+        Response response =
+                given()
+                        .header("Content-type", "application/json")
+                        .and()
+                        .when()
+                        .get(ApiEndpoint.GET_INGREDIENTS_LIST);
+        response.then().log().all()
+                .assertThat()
+                .statusCode(200);
+        Ingredients ingredients = response.body().as(Ingredients.class);
+
+        return ingredients.getData();
+    }
+
+@Test
+public void createOrderWithAuthTest(){
+    createUser(newUser); //созадем нового пользователя
+    Response response = loginUser(credentials); //логинимся
+    List<Data> ingrList = getListOfIngredients();
+    int size = ingrList.size(); //индексы массива будут от 0 до size-1
+    System.out.println(size);
+    System.out.println("this is size");
+
+    //
+    Random rn = new Random();
+    int randomNum = rn.nextInt(size);
+
+
+}
 
     @After
     public void cleanUp() { //удаление пользователя
