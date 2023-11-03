@@ -31,6 +31,8 @@ public class OrderCreationTest {
     User newUser = new User(email, password, name);
     Credentials credentials = new Credentials(newUser.getEmail(), newUser.getPassword()); //логин и пароль основного пользователя
 
+    Random rn;
+    int randomNum1, randomNum2, randomNum3;
 
     @Step("Создание пользователя")
     public Response createUser(User user) {
@@ -117,27 +119,38 @@ public class OrderCreationTest {
         int size = ingrList.size(); //индексы массива будут от 0 до size-1
         System.out.println(size);
         System.out.println("this is size");
-        Random rn;
-        List<String> ingredients = new ArrayList<>();
-        int randomNum1, randomNum2, randomNum3;
+
         //сгенерируем 3 случайных числа, это будут индексы ингредиентов
 
         rn = new Random();
         randomNum1 = rn.nextInt(size);
-        ingredients.add(0, "\"" + ingrList.get(randomNum1).get_id()+ "\"");
         System.out.println(randomNum1);
 
         rn = new Random();
         randomNum2 = rn.nextInt(size);
-        ingredients.add(1, "\"" + ingrList.get(randomNum2).get_id()+ "\"");
         System.out.println(randomNum2);
 
         rn = new Random();
         randomNum3 = rn.nextInt(size);
-        ingredients.add(2, "\"" + ingrList.get(randomNum3).get_id()+ "\"");
         System.out.println(randomNum3);
 
-        System.out.println(ingredients);
+        //IngredientsDto ingredientsDto = new IngredientsDto();
+      /*  IngredientsDto ingredientsDto = (IngredientsDto) List.of("\"" + ingrList.get(randomNum1).get_id()+ "\"");
+        ingredientsDto.add( "\"" + ingrList.get(randomNum1).get_id()+ "\"");
+        ingredientsDto.add( "\"" + ingrList.get(randomNum2).get_id()+ "\"");
+        ingredientsDto.add( "\"" + ingrList.get(randomNum3).get_id()+ "\"");*/
+       /* List<String> tempIngr = new ArrayList<>();
+        tempIngr.add( "\"" + ingrList.get(randomNum1).get_id()+ "\"");
+        tempIngr.add( "\"" + ingrList.get(randomNum2).get_id()+ "\"");
+        tempIngr.add("\"" + ingrList.get(randomNum3).get_id()+ "\"");
+        ingredientsDto.setIngredients(tempIngr);*/
+
+/*        List<IngredientsDto> ingredientsDto = new ArrayList<IngredientsDto>();
+        ingredientsDto.add(new IngredientsDto( "\"" + ingrList.get(randomNum1).get_id()+ "\""));
+        ingredientsDto.add(new IngredientsDto( "\"" + ingrList.get(randomNum2).get_id()+ "\""));
+        ingredientsDto.add(new IngredientsDto( "\"" + ingrList.get(randomNum3).get_id()+ "\""));
+        System.out.println(ingredientsDto); */
+
         System.out.println("ingredients!!");
 
         String json = "{\"ingredients\": [" + "\""
@@ -147,14 +160,12 @@ public class OrderCreationTest {
         System.out.println(json);
         //создаем заказ
         String userToken = loginUser(newUser);
-        System.out.println(userToken);
-
         if (userToken != null) {
             response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
-                    // .body(ingredients)
                     .body(json)
+                   // .body(ingredientsDto)
                     .when()
                     .post(ApiEndpoint.CREATE_ORDER);
 
@@ -170,6 +181,166 @@ public class OrderCreationTest {
 
         }
     }
+
+    @Test
+    public void createOrderWithoutAuthTest() {
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        List<Data> ingrList = getListOfIngredients();
+        int size = ingrList.size(); //индексы массива будут от 0 до size-1
+        System.out.println(size);
+        System.out.println("this is size");
+
+        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
+
+        rn = new Random();
+        randomNum1 = rn.nextInt(size);
+        System.out.println(randomNum1);
+
+        rn = new Random();
+        randomNum2 = rn.nextInt(size);
+        System.out.println(randomNum2);
+
+        rn = new Random();
+        randomNum3 = rn.nextInt(size);
+        System.out.println(randomNum3);
+
+
+        String json = "{\"ingredients\": [" + "\""
+                + ingrList.get(randomNum1).get_id() + "\"" + ", "
+                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
+                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";
+        System.out.println(json);
+        //создаем заказ
+
+            response = given()
+                    .header("Content-type", "application/json")
+                    //.header("Authorization", userToken)
+                    .body(json)
+                    // .body(ingredientsDto)
+                    .when()
+                    .post(ApiEndpoint.CREATE_ORDER);
+
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(200);
+
+            response.then()
+                    .assertThat().body("success", equalTo(true));
+            response.then().assertThat().body("order", notNullValue());
+            response.then().assertThat().body("order.owner", equalTo(null));
+            response.then().assertThat().body("order.number", notNullValue());
+
+    }
+
+
+    @Test
+    public void createOrderWithoutIngrNoAuthTest() {
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        List<Data> ingrList = getListOfIngredients();
+        int size = ingrList.size(); //индексы массива будут от 0 до size-1
+        System.out.println(size);
+        System.out.println("this is size");
+
+        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
+
+  /*      String json = "{\"ingredients\": [" + "\""
+                + ingrList.get(randomNum1).get_id() + "\"" + ", "
+                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
+                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";*/
+        String json = "{\"ingredients\": []}";
+        System.out.println(json);
+        //создаем заказ
+
+        response = given()
+                .header("Content-type", "application/json")
+                //.header("Authorization", userToken)
+                .body(json)
+                // .body(ingredientsDto)
+                .when()
+                .post(ApiEndpoint.CREATE_ORDER);
+
+        response.then().log().all()
+                .assertThat()
+                .statusCode(400);
+
+        response.then()
+                .assertThat().body("success", equalTo(false));
+        response.then().assertThat().body("message", CoreMatchers.equalTo("Ingredient ids must be provided"));
+
+    }
+
+    @Test
+    public void createOrderWithoutIngrWithAuthTest() {
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        List<Data> ingrList = getListOfIngredients();
+        int size = ingrList.size(); //индексы массива будут от 0 до size-1
+        System.out.println(size);
+        System.out.println("this is size");
+/*        String json = "{\"ingredients\": [" + "\""
+                + ingrList.get(randomNum1).get_id() + "\"" + ", "
+                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
+                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";*/
+        String json = "{\"ingredients\": []}";
+        System.out.println(json);
+        //создаем заказ
+        String userToken = loginUser(newUser);
+        if (userToken != null) {
+            response = given()
+                    .header("Content-type", "application/json")
+                    .header("Authorization", userToken)
+                    .body(json)
+                    // .body(ingredientsDto)
+                    .when()
+                    .post(ApiEndpoint.CREATE_ORDER);
+
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(400);
+
+            response.then()
+                    .assertThat().body("success", equalTo(false));
+            response.then().assertThat().body("message", CoreMatchers.equalTo("Ingredient ids must be provided"));
+
+
+        }
+    }
+
+    @Test
+    public void createOrderWrongHashWithAuthTest() {
+        createUser(newUser); //созадем нового пользователя
+        Response response = loginUser(credentials); //логинимся
+        List<Data> ingrList = getListOfIngredients();
+        int size = ingrList.size(); //индексы массива будут от 0 до size-1
+        System.out.println(size);
+        System.out.println("this is size");
+        String json = "{\"ingredients\": [" + "\""
+                + ingrList.get(randomNum1).get_id() + "c" + "\"" + ", "
+                + "\"" + ingrList.get(randomNum2).get_id() + "h" + "\"" + ", "
+                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";
+        //String json = "{\"ingredients\": []}";
+        System.out.println(json);
+        //создаем заказ
+        String userToken = loginUser(newUser);
+        if (userToken != null) {
+            response = given()
+                    .header("Content-type", "application/json")
+                    .header("Authorization", userToken)
+                    .body(json)
+                    // .body(ingredientsDto)
+                    .when()
+                    .post(ApiEndpoint.CREATE_ORDER);
+
+            response.then().log().all()
+                    .assertThat()
+                    .statusCode(500);
+
+
+        }
+    }
+
 
     @After
     public void cleanUp() { //удаление пользователя
