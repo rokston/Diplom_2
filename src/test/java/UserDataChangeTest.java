@@ -3,15 +3,7 @@ import static io.restassured.RestAssured.given;
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.*;
-
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
-
-import io.qameta.allure.junit4.DisplayName; // импорт DisplayName
-import io.qameta.allure.Description; // импорт Description
 import io.qameta.allure.Step; // импорт Step
 
 public class UserDataChangeTest {
@@ -144,23 +136,17 @@ public class UserDataChangeTest {
         int code = response.then().
                 extract().statusCode();
         if (code == 200) { // логин прошел успешно, можно редактировать данные
-           // String userToken = response //токен для доступа на редактирование
-             //       .then().extract().body().path("accessToken");
 
             response = given() // устанавливаем новые данные пользователя
                     .header("Content-type", "application/json")
-                    //.header("Authorization", userToken)
                     .and()
                     .body(userData)
                     .when()
                     .patch(ApiEndpoint.CHANGE_USER_DATA);
 
-            response.then().log().all() //проверяем, что запрос на редактирование принят успешно
+            response.then().log().all() //проверяем, что запрос на редактирование не принят
                     .assertThat()
                     .statusCode(401);
-//проверяем, что после редактирования данные пользователя изменились
-            //   response.then().assertThat().body("user.email", CoreMatchers.equalTo(userData.getEmail()));
-           // response.then().assertThat().body("user.name", CoreMatchers.equalTo(userData.getName()));
 
 
 
@@ -168,15 +154,6 @@ public class UserDataChangeTest {
             response.then().log().all()
                     .assertThat()
                     .statusCode(200);
-
-          //  credentials.setEmail(chEmail); //в данных пользователя для логина устанавливаем новый имейл
-
-          //  response = loginUser(credentials); //удачная попытка логина с новыми даныыми
-
-          //  response.then().log().all()
-          //          .assertThat()
-          //          .statusCode(200);
-
         }
     }
 

@@ -7,11 +7,10 @@ import org.junit.*;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
+
 
 import io.qameta.allure.Step; // импорт Step
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -112,13 +111,11 @@ public class OrderCreationTest {
     }
 
     @Test
-    public void createOrderWithAuthTest() {
-        createUser(newUser); //созадем нового пользователя
+    public void createOrderWithAuthTest() { //создаем заказ с ингредиентами и авторизацией
+        createUser(newUser); //создаем нового пользователя
         Response response = loginUser(credentials); //логинимся
         List<Data> ingrList = getListOfIngredients();
         int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        System.out.println(size);
-        System.out.println("this is size");
 
         //сгенерируем 3 случайных числа, это будут индексы ингредиентов
 
@@ -134,62 +131,41 @@ public class OrderCreationTest {
         randomNum3 = rn.nextInt(size);
         System.out.println(randomNum3);
 
-        //IngredientsDto ingredientsDto = new IngredientsDto();
-      /*  IngredientsDto ingredientsDto = (IngredientsDto) List.of("\"" + ingrList.get(randomNum1).get_id()+ "\"");
-        ingredientsDto.add( "\"" + ingrList.get(randomNum1).get_id()+ "\"");
-        ingredientsDto.add( "\"" + ingrList.get(randomNum2).get_id()+ "\"");
-        ingredientsDto.add( "\"" + ingrList.get(randomNum3).get_id()+ "\"");*/
-       /* List<String> tempIngr = new ArrayList<>();
-        tempIngr.add( "\"" + ingrList.get(randomNum1).get_id()+ "\"");
-        tempIngr.add( "\"" + ingrList.get(randomNum2).get_id()+ "\"");
-        tempIngr.add("\"" + ingrList.get(randomNum3).get_id()+ "\"");
-        ingredientsDto.setIngredients(tempIngr);*/
+        IngredientsDto ingredientsDto = new IngredientsDto(); //заполняем массив ингредиентов для заказа
+        ingredientsDto.add(ingrList.get(randomNum1).get_id());
+        ingredientsDto.add(ingrList.get(randomNum2).get_id());
+        ingredientsDto.add(ingrList.get(randomNum3).get_id());
 
-/*        List<IngredientsDto> ingredientsDto = new ArrayList<IngredientsDto>();
-        ingredientsDto.add(new IngredientsDto( "\"" + ingrList.get(randomNum1).get_id()+ "\""));
-        ingredientsDto.add(new IngredientsDto( "\"" + ingrList.get(randomNum2).get_id()+ "\""));
-        ingredientsDto.add(new IngredientsDto( "\"" + ingrList.get(randomNum3).get_id()+ "\""));
-        System.out.println(ingredientsDto); */
 
-        System.out.println("ingredients!!");
-
-        String json = "{\"ingredients\": [" + "\""
-                + ingrList.get(randomNum1).get_id() + "\"" + ", "
-                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
-                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";
-        System.out.println(json);
         //создаем заказ
         String userToken = loginUser(newUser);
         if (userToken != null) {
             response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
-                    .body(json)
-                   // .body(ingredientsDto)
+                    .body(ingredientsDto)
                     .when()
                     .post(ApiEndpoint.CREATE_ORDER);
 
             response.then().log().all()
                     .assertThat()
-                    .statusCode(200);
+                    .statusCode(200); //код ответа успешного запроса
 
             response.then()
-                    .assertThat().body("success", equalTo(true));
-            response.then().assertThat().body("order", notNullValue());
-            response.then().assertThat().body("order.owner", notNullValue());
-            response.then().assertThat().body("order.number", notNullValue());
+                    .assertThat().body("success", equalTo(true)); //заказ успешен
+            response.then().assertThat().body("order", notNullValue()); // поле order в ответе не пустое
+            response.then().assertThat().body("order.owner", notNullValue()); // поле в ответе не пустое
+            response.then().assertThat().body("order.number", notNullValue());// поле в ответе не пустое
 
         }
     }
 
     @Test
-    public void createOrderWithoutAuthTest() {
+    public void createOrderWithoutAuthTest() { //создаем заказ без авторизации
         createUser(newUser); //созадем нового пользователя
         Response response = loginUser(credentials); //логинимся
         List<Data> ingrList = getListOfIngredients();
         int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        System.out.println(size);
-        System.out.println("this is size");
 
         //сгенерируем 3 случайных числа, это будут индексы ингредиентов
 
@@ -205,63 +181,48 @@ public class OrderCreationTest {
         randomNum3 = rn.nextInt(size);
         System.out.println(randomNum3);
 
+        IngredientsDto ingredientsDto = new IngredientsDto(); //заполняем массив ингредиентов для будущего заказа
+        ingredientsDto.add(ingrList.get(randomNum1).get_id());
+        ingredientsDto.add(ingrList.get(randomNum2).get_id());
+        ingredientsDto.add(ingrList.get(randomNum3).get_id());
 
-        String json = "{\"ingredients\": [" + "\""
-                + ingrList.get(randomNum1).get_id() + "\"" + ", "
-                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
-                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";
-        System.out.println(json);
         //создаем заказ
 
             response = given()
                     .header("Content-type", "application/json")
-                    //.header("Authorization", userToken)
-                    .body(json)
-                    // .body(ingredientsDto)
+                    .body(ingredientsDto)
                     .when()
                     .post(ApiEndpoint.CREATE_ORDER);
 
             response.then().log().all()
                     .assertThat()
-                    .statusCode(200);
+                    .statusCode(200); //запрос обработан успешно
 
             response.then()
-                    .assertThat().body("success", equalTo(true));
+                    .assertThat().body("success", equalTo(true));//запрос обработан успешно
             response.then().assertThat().body("order", notNullValue());
-            response.then().assertThat().body("order.owner", equalTo(null));
-            response.then().assertThat().body("order.number", notNullValue());
+            response.then().assertThat().body("order.owner", equalTo(null)); // у заказа нет пользователя
+            response.then().assertThat().body("order.number", notNullValue()); //у заказа есть номер
 
     }
 
 
     @Test
-    public void createOrderWithoutIngrNoAuthTest() {
+    public void createOrderWithoutIngrNoAuthTest() { //создание заказа без ингредиентов и без авторизации
         createUser(newUser); //созадем нового пользователя
         Response response = loginUser(credentials); //логинимся
-        List<Data> ingrList = getListOfIngredients();
-        int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        System.out.println(size);
-        System.out.println("this is size");
 
-        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
+        String json = "{\"ingredients\": []}"; //в запросе не указаны id ингредиентов
 
-  /*      String json = "{\"ingredients\": [" + "\""
-                + ingrList.get(randomNum1).get_id() + "\"" + ", "
-                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
-                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";*/
-        String json = "{\"ingredients\": []}";
-        System.out.println(json);
         //создаем заказ
 
         response = given()
                 .header("Content-type", "application/json")
-                //.header("Authorization", userToken)
                 .body(json)
-                // .body(ingredientsDto)
                 .when()
                 .post(ApiEndpoint.CREATE_ORDER);
 
-        response.then().log().all()
+        response.then().log().all() //ошибка в ответ на запрос
                 .assertThat()
                 .statusCode(400);
 
@@ -272,19 +233,13 @@ public class OrderCreationTest {
     }
 
     @Test
-    public void createOrderWithoutIngrWithAuthTest() {
-        createUser(newUser); //созадем нового пользователя
+    public void createOrderWithoutIngrWithAuthTest() { //создание заказа без ингредиентов и с авторизацией
+        createUser(newUser); //создаем нового пользователя
         Response response = loginUser(credentials); //логинимся
-        List<Data> ingrList = getListOfIngredients();
-        int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        System.out.println(size);
-        System.out.println("this is size");
-/*        String json = "{\"ingredients\": [" + "\""
-                + ingrList.get(randomNum1).get_id() + "\"" + ", "
-                + "\"" + ingrList.get(randomNum2).get_id() + "\"" + ", "
-                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";*/
-        String json = "{\"ingredients\": []}";
-        System.out.println(json);
+
+
+        String json = "{\"ingredients\": []}"; //список ингредиентов без id
+
         //создаем заказ
         String userToken = loginUser(newUser);
         if (userToken != null) {
@@ -292,11 +247,10 @@ public class OrderCreationTest {
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
                     .body(json)
-                    // .body(ingredientsDto)
                     .when()
                     .post(ApiEndpoint.CREATE_ORDER);
 
-            response.then().log().all()
+            response.then().log().all()//ошибка в ответ на запрос
                     .assertThat()
                     .statusCode(400);
 
@@ -309,31 +263,42 @@ public class OrderCreationTest {
     }
 
     @Test
-    public void createOrderWrongHashWithAuthTest() {
-        createUser(newUser); //созадем нового пользователя
+    public void createOrderWrongHashWithAuthTest() { //заказ с неверными id ингредиентов и авторизацией
+        createUser(newUser); //создаем нового пользователя
         Response response = loginUser(credentials); //логинимся
         List<Data> ingrList = getListOfIngredients();
         int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        System.out.println(size);
-        System.out.println("this is size");
-        String json = "{\"ingredients\": [" + "\""
-                + ingrList.get(randomNum1).get_id() + "c" + "\"" + ", "
-                + "\"" + ingrList.get(randomNum2).get_id() + "h" + "\"" + ", "
-                +"\"" + ingrList.get(randomNum3).get_id() + "\"]}";
-        //String json = "{\"ingredients\": []}";
-        System.out.println(json);
+
+        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
+
+        rn = new Random();
+        randomNum1 = rn.nextInt(size);
+        System.out.println(randomNum1);
+
+        rn = new Random();
+        randomNum2 = rn.nextInt(size);
+        System.out.println(randomNum2);
+
+        rn = new Random();
+        randomNum3 = rn.nextInt(size);
+        System.out.println(randomNum3);
+
+        IngredientsDto ingredientsDto = new IngredientsDto();
+        ingredientsDto.add(ingrList.get(randomNum1).get_id() + "рр"); // создали список ингредиентов для заказа и один исказили
+        ingredientsDto.add(ingrList.get(randomNum2).get_id());
+        ingredientsDto.add(ingrList.get(randomNum3).get_id());
+
         //создаем заказ
         String userToken = loginUser(newUser);
         if (userToken != null) {
             response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
-                    .body(json)
-                    // .body(ingredientsDto)
+                    .body(ingredientsDto)
                     .when()
                     .post(ApiEndpoint.CREATE_ORDER);
 
-            response.then().log().all()
+            response.then().log().all() //ошибка в ответ на запрос
                     .assertThat()
                     .statusCode(500);
 

@@ -111,46 +111,40 @@ public class GetOrderListTest {
 
 @Test
 public void getAllOrdersTest(){
-    Response response = given()
+    Response response = given() //запрос на получение списка заказов
             .header("Content-type", "application/json")
-           // .header("Authorization", userToken)
-           // .body(json)
-            // .body(ingredientsDto)
             .when()
             .get(ApiEndpoint.GET_ORDER_LIST);
 
-    response.then().log().all()
+    response.then().log().all() //запрос принят успешно
             .assertThat()
             .statusCode(200);
     response.then()
             .assertThat().body("success", equalTo(true));
-    response.then().assertThat().body("orders", notNullValue());
-    response.then().assertThat().body("total", notNullValue());
-    response.then().assertThat().body("totalToday", notNullValue());
+    response.then().assertThat().body("orders", notNullValue()); //непустое поле
+    response.then().assertThat().body("total", notNullValue()); //непустое поле
+    response.then().assertThat().body("totalToday", notNullValue()); //непустое поле
 }
 
-   @Step("создание заказа с пользователем")
+   @Step("создание заказа с пользователем") //вспомогательный шаг создания заказа из одного ингредиента
     public void createOrder(User user){
                String userToken = loginUser(user);
        if (userToken != null) {
            List<Data> ingrList = getListOfIngredients();
            int size = ingrList.size(); //индексы массива будут от 0 до size-1
-           System.out.println(size);
-           //System.out.println("this is size");
-
-           //сгенерируем 3 случайных числа, это будут индексы ингредиентов
 
            Random rn = new Random();
            int randomNum1 = rn.nextInt(size);
-           // System.out.println(randomNum1);
+           IngredientsDto ingredientsDto = new IngredientsDto(); //заполняем массив ингредиентов для заказа
+           ingredientsDto.add(ingrList.get(randomNum1).get_id());
 
-           String json = "{\"ingredients\": [" + "\""
-                   + ingrList.get(randomNum1).get_id() + "\"" + "]}";
+           /*String json = "{\"ingredients\": [" + "\""
+                   + ingrList.get(randomNum1).get_id() + "\"" + "]}";*/
 
            Response response = given()
                    .header("Content-type", "application/json")
                    .header("Authorization", userToken)
-                   .body(json)
+                   .body(ingredientsDto)
                    .when()
                    .post(ApiEndpoint.CREATE_ORDER);
 
@@ -163,10 +157,10 @@ public void getAllOrdersTest(){
         String userToken = loginUser(newUser);
         Random rn = new Random();
         int randomNum = rn.nextInt(10)+1;
-        for (int i = 0; i<randomNum; i++){
+        for (int i = 0; i<randomNum; i++){ //создаем от 1 до 10 заказов от этого пользователя
         createOrder(newUser);}
 
-      Response      response = given()
+      Response      response = given() // запрашиваем заказы от пользователя
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
                     // .body(json)
@@ -174,17 +168,15 @@ public void getAllOrdersTest(){
                     .when()
                     .get(ApiEndpoint.GET_ORDER_LIST_BY_USER);
 
-            response.then().log().all()
+            response.then().log().all() //запрос успешен
                     .assertThat()
                     .statusCode(200);
             response.then()
                     .assertThat().body("success", equalTo(true));
 
         List<String> orders = response.then().extract().body().jsonPath().getList("orders._id");
-        MatcherAssert.assertThat(orders.isEmpty(),is(false));
-        System.out.println(orders.size());
-        System.out.println("размер массива заказов");
-        MatcherAssert.assertThat(orders.size(),is(randomNum));
+        MatcherAssert.assertThat(orders.isEmpty(),is(false)); // вернулось непустое количество заказов
+        MatcherAssert.assertThat(orders.size(),is(randomNum)); // вернулось количество заказов, равное ранее созданному
         }
 
 
