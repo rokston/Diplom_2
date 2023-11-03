@@ -337,7 +337,6 @@ public class OrderCreationTest {
                     .assertThat()
                     .statusCode(500);
 
-
         }
     }
 
