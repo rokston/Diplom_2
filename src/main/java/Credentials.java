@@ -19,5 +19,4 @@ public class Credentials { //логин и пароль пользователя
         this.email = email;
     }
 
-
 }

@@ -5,6 +5,7 @@ import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
 import org.junit.*;
 import io.qameta.allure.Step; // импорт Step
+import java.util.logging.Logger;
 
 public class UserDataChangeTest {
 
@@ -12,6 +13,7 @@ public class UserDataChangeTest {
     public void setUp() {
         RestAssured.baseURI = ApiEndpoint.BASE_ADDRESS;
     }
+    private static Logger log = Logger.getLogger(UserDataChangeTest.class.getName());
     Faker faker = new Faker();
     String email = faker.name().username() + "@testdomain.com";
     String chEmail = email + "ch";
@@ -82,10 +84,9 @@ public class UserDataChangeTest {
         return response;
     }
 
-    @Step("Изменение данных пользователя")
     @Test
-    public void changeUserDataTest() {
-        createUser(newUser); //созадем нового пользователя
+    public void changeUserDataTest() {//изменение данных пользователя
+        createUser(newUser); //создаем нового пользователя
         Response response = loginUser(credentials); //логинимся
         UserData userData = new UserData(email + "ch", name + "ch"); //отредактированные данные пользователя
         int code = response.then().
@@ -191,7 +192,7 @@ public class UserDataChangeTest {
 
             }
             else  {
-                System.out.println("Cannot delete not existing user");
+                log.info("Cannot delete not existing user");
             }
         }
     }

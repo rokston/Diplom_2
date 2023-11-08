@@ -1,7 +1,6 @@
 public class User {
 
     //пользователь -- логин, пароль, имя
-
     private  String email;
     private  String password;
     private  String name;
@@ -30,9 +29,7 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
-
     }
-
 }
 
 
