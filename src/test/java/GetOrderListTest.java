@@ -144,7 +144,6 @@ public class GetOrderListTest {
                         .body(ingredientsDto)
                         .when()
                         .post(ApiEndpoint.CREATE_ORDER);
-
             }
     }
 
