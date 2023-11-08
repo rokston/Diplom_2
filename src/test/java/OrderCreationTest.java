@@ -29,7 +29,7 @@ public class OrderCreationTest {
     public void createOrderWithAuthTest() { //создаем заказ с ингредиентами и авторизацией
         createUser(newUser); //создаем нового пользователя
         String userToken = loginUser(newUser);
-        IngredientsDto ingredientsDto = prepareTestDataForOrder();
+        IngredientsDto ingredientsDto = OrderData.prepareTestDataForOrder();
         //создаем заказ
          if (userToken != null) {
          Response   response = given()
@@ -56,7 +56,7 @@ public class OrderCreationTest {
     @DisplayName("Создание заказа с ингредиентами и без авторизации")
     public void createOrderWithoutAuthTest() { //создаем заказ без авторизации
         createUser(newUser); //создаем нового пользователя
-        IngredientsDto ingredientsDto = prepareTestDataForOrder();
+        IngredientsDto ingredientsDto = OrderData.prepareTestDataForOrder();
         //создаем заказ
         Response    response = given()
                     .header("Content-type", "application/json")
@@ -130,7 +130,7 @@ public class OrderCreationTest {
     @DisplayName("Создание заказа с неверными id ингредиентов и авторизацией")
     public void createOrderWrongHashWithAuthTest() { //заказ с неверными id ингредиентов и авторизацией
         createUser(newUser); //создаем нового пользователя
-        IngredientsDto ingredientsDto = prepareWrongTestDataForOrder();
+        IngredientsDto ingredientsDto = OrderData.prepareWrongTestDataForOrder();
         //создаем заказ
         String userToken = loginUser(newUser);
         if (userToken != null) {
@@ -207,69 +207,6 @@ public class OrderCreationTest {
         return response;
     }
 
-    @Step("получение списка ингредиентов")
-    public List<Data> getListOfIngredients() { //получение списка ингредиентов
-        Response response =
-                given()
-                        .header("Content-type", "application/json")
-                        .and()
-                        .when()
-                        .get(ApiEndpoint.GET_INGREDIENTS_LIST);
-        response.then().log().all()
-                .assertThat()
-                .statusCode(200);
-        Ingredients ingredients = response.body().as(Ingredients.class);
-
-        return ingredients.getData();
-    }
-
-
-    @Step("Создание набора ингредиентов для формирования заказа")
-    public IngredientsDto prepareTestDataForOrder(){
-        Random rn;
-        int randomNum1, randomNum2, randomNum3;
-        createUser(newUser); //создаем нового пользователя
-        Response response = loginUser(credentials); //логинимся
-        List<Data> ingrList = getListOfIngredients();
-        int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
-        rn = new Random();
-        randomNum1 = rn.nextInt(size);
-        rn = new Random();
-        randomNum2 = rn.nextInt(size);
-        rn = new Random();
-        randomNum3 = rn.nextInt(size);
-        IngredientsDto ingredientsDto = new IngredientsDto(); //заполняем массив ингредиентов для заказа
-        ingredientsDto.add(ingrList.get(randomNum1).get_id());
-        ingredientsDto.add(ingrList.get(randomNum2).get_id());
-        ingredientsDto.add(ingrList.get(randomNum3).get_id());
-
-        return ingredientsDto;
-    }
-
-
-    @Step("Создание набора ингредиентов для формирования заказа с неверным хешем")
-    public IngredientsDto prepareWrongTestDataForOrder(){
-        Random rn;
-        int randomNum1, randomNum2, randomNum3;
-        createUser(newUser); //создаем нового пользователя
-        Response response = loginUser(credentials); //логинимся
-        List<Data> ingrList = getListOfIngredients();
-        int size = ingrList.size(); //индексы массива будут от 0 до size-1
-        //сгенерируем 3 случайных числа, это будут индексы ингредиентов
-        rn = new Random();
-        randomNum1 = rn.nextInt(size);
-        rn = new Random();
-        randomNum2 = rn.nextInt(size);
-        rn = new Random();
-        randomNum3 = rn.nextInt(size);
-        IngredientsDto ingredientsDto = new IngredientsDto(); //заполняем массив ингредиентов для заказа
-        ingredientsDto.add(ingrList.get(randomNum1).get_id() + "pp");
-        ingredientsDto.add(ingrList.get(randomNum2).get_id());
-        ingredientsDto.add(ingrList.get(randomNum3).get_id());
-
-        return ingredientsDto;
-    }
 
 
     @Before

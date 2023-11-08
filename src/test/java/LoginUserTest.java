@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import java.util.logging.Logger;
 import io.qameta.allure.junit4.DisplayName; // импорт DisplayName
-import io.qameta.allure.Description; // импорт Description
 import io.qameta.allure.Step; // импорт Step
 
 public class LoginUserTest {
