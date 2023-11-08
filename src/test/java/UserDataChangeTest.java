@@ -1,10 +1,13 @@
 import io.restassured.response.Response;
+
 import static io.restassured.RestAssured.given;
+
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
 import org.junit.*;
 import io.qameta.allure.Step; // импорт Step
+
 import java.util.logging.Logger;
 
 public class UserDataChangeTest {
@@ -13,6 +16,7 @@ public class UserDataChangeTest {
     public void setUp() {
         RestAssured.baseURI = ApiEndpoint.BASE_ADDRESS;
     }
+
     private static Logger log = Logger.getLogger(UserDataChangeTest.class.getName());
     Faker faker = new Faker();
     String email = faker.name().username() + "@testdomain.com";
@@ -111,7 +115,6 @@ public class UserDataChangeTest {
             response.then().assertThat().body("user.name", CoreMatchers.equalTo(userData.getName()));
 
 
-
             response = loginUser(credentials);//неудачная попытка залогиниться со старым имейлом
             response.then().log().all()
                     .assertThat()
@@ -150,7 +153,6 @@ public class UserDataChangeTest {
                     .statusCode(401);
 
 
-
             response = loginUser(credentials);//удачная попытка залогиниться со старым имейлом
             response.then().log().all()
                     .assertThat()
@@ -163,7 +165,7 @@ public class UserDataChangeTest {
     public void cleanUp() { //удаление пользователя
         User newUser = new User(chEmail, password, name);//удаление пользователя с отредактированными данными
         String userToken = loginUser(newUser);
-        if (userToken != null)  {
+        if (userToken != null) {
             Response response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
@@ -174,8 +176,7 @@ public class UserDataChangeTest {
                     .assertThat()
                     .statusCode(202);
 
-        }
-        else {
+        } else {
             newUser = new User(email, password, name);//удаление пользователя с неотредактированными данными
             userToken = loginUser(newUser);
 
@@ -190,8 +191,7 @@ public class UserDataChangeTest {
                         .assertThat()
                         .statusCode(202);
 
-            }
-            else  {
+            } else {
                 log.info("Cannot delete not existing user");
             }
         }

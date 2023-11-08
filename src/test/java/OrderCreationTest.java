@@ -1,17 +1,20 @@
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+
 import static io.restassured.RestAssured.given;
+
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
 import org.junit.*;
+
 import java.util.logging.Logger;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+
 import io.qameta.allure.Step;
-import java.util.List;
-import java.util.Random;
+
 
 public class OrderCreationTest {
     private static Logger log = Logger.getLogger(OrderCreationTest.class.getName());
@@ -31,8 +34,8 @@ public class OrderCreationTest {
         String userToken = loginUser(newUser);
         IngredientsDto ingredientsDto = OrderData.prepareTestDataForOrder();
         //создаем заказ
-         if (userToken != null) {
-         Response   response = given()
+        if (userToken != null) {
+            Response response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
                     .body(ingredientsDto)
@@ -58,21 +61,21 @@ public class OrderCreationTest {
         createUser(newUser); //создаем нового пользователя
         IngredientsDto ingredientsDto = OrderData.prepareTestDataForOrder();
         //создаем заказ
-        Response    response = given()
-                    .header("Content-type", "application/json")
-                    .body(ingredientsDto)
-                    .when()
-                    .post(ApiEndpoint.CREATE_ORDER);
+        Response response = given()
+                .header("Content-type", "application/json")
+                .body(ingredientsDto)
+                .when()
+                .post(ApiEndpoint.CREATE_ORDER);
 
-            response.then().log().all()
-                    .assertThat()
-                    .statusCode(200); //запрос обработан успешно
+        response.then().log().all()
+                .assertThat()
+                .statusCode(200); //запрос обработан успешно
 
-            response.then()
-                    .assertThat().body("success", equalTo(true));//запрос обработан успешно
-            response.then().assertThat().body("order", notNullValue());
-            response.then().assertThat().body("order.owner", equalTo(null)); // у заказа нет пользователя
-            response.then().assertThat().body("order.number", notNullValue()); //у заказа есть номер
+        response.then()
+                .assertThat().body("success", equalTo(true));//запрос обработан успешно
+        response.then().assertThat().body("order", notNullValue());
+        response.then().assertThat().body("order.owner", equalTo(null)); // у заказа нет пользователя
+        response.then().assertThat().body("order.number", notNullValue()); //у заказа есть номер
     }
 
     @Test
@@ -98,7 +101,8 @@ public class OrderCreationTest {
 
     }
 
-    @Test@DisplayName("Создание заказа без ингредиентов и с авторизацией")
+    @Test
+    @DisplayName("Создание заказа без ингредиентов и с авторизацией")
     public void createOrderWithoutIngrWithAuthTest() { //создание заказа без ингредиентов и с авторизацией
         createUser(newUser); //создаем нового пользователя
         String json = "{\"ingredients\": []}"; //список ингредиентов без id
@@ -106,7 +110,7 @@ public class OrderCreationTest {
         //создаем заказ
         String userToken = loginUser(newUser);
         if (userToken != null) {
-           Response response = given()
+            Response response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
                     .body(json)
@@ -206,7 +210,6 @@ public class OrderCreationTest {
                 .delete(ApiEndpoint.DELETE_USER);
         return response;
     }
-
 
 
     @Before

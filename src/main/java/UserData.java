@@ -1,5 +1,4 @@
 public class UserData {
-
     private String email;
     private String name;
 

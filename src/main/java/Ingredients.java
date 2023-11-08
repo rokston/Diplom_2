@@ -1,4 +1,5 @@
 import java.util.List;
+
 public class Ingredients {
     private String success;
     private List<Data> data;

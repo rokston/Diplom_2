@@ -25,7 +25,7 @@ public class OrderData {
 
 
     @Step("Создание набора ингредиентов для формирования заказа")
-    public static IngredientsDto prepareTestDataForOrder(){
+    public static IngredientsDto prepareTestDataForOrder() {
         Random rn;
         int randomNum1, randomNum2, randomNum3;
         List<Data> ingrList = getListOfIngredients();
@@ -47,7 +47,7 @@ public class OrderData {
 
 
     @Step("Создание набора ингредиентов для формирования заказа с неверным хешем")
-    public static IngredientsDto prepareWrongTestDataForOrder(){
+    public static IngredientsDto prepareWrongTestDataForOrder() {
         Random rn;
         int randomNum1, randomNum2, randomNum3;
         List<Data> ingrList = getListOfIngredients();
@@ -68,7 +68,7 @@ public class OrderData {
     }
 
     @Step("выбор ингредиента для заказа с пользователем")
-    public static IngredientsDto prepareIngredient(){
+    public static IngredientsDto prepareIngredient() {
         List<Data> ingrList = getListOfIngredients(); //список доступных ингредиентов
         int size = ingrList.size(); //индексы массива будут от 0 до size-1
         Random rn = new Random();

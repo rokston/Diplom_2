@@ -1,12 +1,16 @@
 import io.restassured.response.Response;
+
 import static io.restassured.RestAssured.given;
+
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.logging.Logger;
+
 import io.qameta.allure.junit4.DisplayName; // импорт DisplayName
 import io.qameta.allure.Step; // импорт Step
 
@@ -48,7 +52,7 @@ public class LoginUserTest {
     @DisplayName("Авторизация пользователя с существующим логином и неверным паролем, неуспешная")
     public void loginUserWrongPasswordFail() {
         createUser(newUser);
-        Credentials wrongLoginCredentials = new Credentials(newUser.getEmail(), newUser.getPassword()+"oops");
+        Credentials wrongLoginCredentials = new Credentials(newUser.getEmail(), newUser.getPassword() + "oops");
         Response response = loginUser(wrongLoginCredentials);
         response.then()
                 .statusCode(401);
@@ -58,8 +62,7 @@ public class LoginUserTest {
     }
 
     @Step("Создание пользователя")
-    public Response createUser(User user)
-    {
+    public Response createUser(User user) {
         Response response =
                 given()
                         .header("Content-type", "application/json")
@@ -72,7 +75,7 @@ public class LoginUserTest {
     }
 
     @Step("логин пользователя")
-    public Response loginUser(Credentials credentials){
+    public Response loginUser(Credentials credentials) {
         Response response =
                 given()
                         .header("Content-type", "application/json")
@@ -84,7 +87,7 @@ public class LoginUserTest {
     }
 
     @Step("авторизация пользователя и получение токена")
-    public String loginUser(User user){ //авторизация пользователя и получение токена
+    public String loginUser(User user) { //авторизация пользователя и получение токена
         Credentials credentials = new Credentials(user.getEmail(), user.getPassword());
         Response response =
                 given()
@@ -98,8 +101,8 @@ public class LoginUserTest {
         String userToken;
         if (code == 200) {
             userToken = response
-                    .then().extract().body().path("accessToken");}
-        else {
+                    .then().extract().body().path("accessToken");
+        } else {
             userToken = null;
         }
         return userToken;
@@ -114,7 +117,7 @@ public class LoginUserTest {
     public void cleanUp() { //удаление пользователя
         User newUser = new User(email, password, name);
         String userToken = loginUser(newUser);
-        if (userToken != null)  {
+        if (userToken != null) {
             Response response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
@@ -124,8 +127,7 @@ public class LoginUserTest {
             response.then().log().all()
                     .assertThat()
                     .statusCode(202);
-        }
-        else  {
+        } else {
             log.info("Cannot delete not existing user");
         }
     }

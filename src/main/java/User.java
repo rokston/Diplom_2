@@ -1,9 +1,9 @@
 public class User {
 
     //пользователь -- логин, пароль, имя
-    private  String email;
-    private  String password;
-    private  String name;
+    private String email;
+    private String password;
+    private String name;
 
     public User(String email, String password, String name) {
         this.email = email;

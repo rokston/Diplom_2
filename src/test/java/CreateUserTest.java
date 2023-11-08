@@ -11,13 +11,14 @@ import static org.hamcrest.core.Is.is;
 
 import io.qameta.allure.junit4.DisplayName; // импорт DisplayName
 import io.qameta.allure.Step; // импорт Step
+
 import java.util.logging.Logger;
 
 public class CreateUserTest {
 
     private static Logger log = Logger.getLogger(CreateUserTest.class.getName());
     Faker faker = new Faker();
-    String email = faker.name().username() +"@testdomain.com";
+    String email = faker.name().username() + "@testdomain.com";
     String password = faker.random().toString();
     String name = faker.name().firstName();
 
@@ -102,8 +103,7 @@ public class CreateUserTest {
     }
 
     @Step("Создание пользователя")
-    public Response createUser(User user)
-    {
+    public Response createUser(User user) {
         Response response =
                 given()
                         .header("Content-type", "application/json")
@@ -116,7 +116,7 @@ public class CreateUserTest {
     }
 
     @Step("Авторизация пользователя с целью получения токена")
-    public String loginUser(User user){ //авторизация пользователя, с целью получения токена
+    public String loginUser(User user) { //авторизация пользователя, с целью получения токена
         Credentials credentials = new Credentials(user.getEmail(), user.getPassword());
         Response response =
                 given()
@@ -130,8 +130,8 @@ public class CreateUserTest {
         String userToken;
         if (code == 200) {
             userToken = response
-                    .then().extract().body().path("accessToken");}
-        else {
+                    .then().extract().body().path("accessToken");
+        } else {
             userToken = null;
         }
         return userToken;
@@ -141,22 +141,22 @@ public class CreateUserTest {
     public void setUp() {
         RestAssured.baseURI = ApiEndpoint.BASE_ADDRESS;
     }
+
     @After
     public void cleanUp() { //удаление пользователя
         User newUser = new User(email, password, name);
         String userToken = loginUser(newUser);
-        if (userToken != null)  {
+        if (userToken != null) {
             Response response = given()
                     .header("Content-type", "application/json")
                     .header("Authorization", userToken)
                     .when()
                     .delete(ApiEndpoint.DELETE_USER);
 
-                    response.then().log().all()
+            response.then().log().all()
                     .assertThat()
                     .statusCode(202);
-            }
-        else  {
+        } else {
             log.info("Cannot delete not existing user");
         }
     }

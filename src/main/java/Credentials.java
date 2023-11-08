@@ -11,6 +11,7 @@ public class Credentials { //логин и пароль пользователя
     public String getEmail() {
         return email;
     }
+
     public String getPassword() {
         return password;
     }
